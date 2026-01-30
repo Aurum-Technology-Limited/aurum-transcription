@@ -29,37 +29,35 @@ const FileUploader = ({ onFileSelected, disabled }) => {
         maxFiles: 1,
         disabled
     });
-    maxFiles: 1,
-        disabled
-});
 
-return (
-    <motion.div
-        {...getRootProps()}
-        className={clsx(
-            "upload-zone glass-panel",
-            isDragActive && "active",
-            disabled && "disabled"
-        )}
-        whileHover={!disabled ? { scale: 1.01, borderColor: 'var(--primary)' } : {}}
-        whileTap={!disabled ? { scale: 0.99 } : {}}
-    >
-        <input {...getInputProps()} />
-        <div className="upload-content">
-            <div className={clsx("icon-circle", isDragActive && "active")}>
-                {isDragActive ? (
-                    <UploadCloud size={48} color="#0a0a0a" />
-                ) : (
-                    <Music size={48} color="var(--primary)" />
-                )}
+
+    return (
+        <motion.div
+            {...getRootProps()}
+            className={clsx(
+                "upload-zone glass-panel",
+                isDragActive && "active",
+                disabled && "disabled"
+            )}
+            whileHover={!disabled ? { scale: 1.01, borderColor: 'var(--primary)' } : {}}
+            whileTap={!disabled ? { scale: 0.99 } : {}}
+        >
+            <input {...getInputProps()} />
+            <div className="upload-content">
+                <div className={clsx("icon-circle", isDragActive && "active")}>
+                    {isDragActive ? (
+                        <UploadCloud size={48} color="#0a0a0a" />
+                    ) : (
+                        <Music size={48} color="var(--primary)" />
+                    )}
+                </div>
+                <h3>
+                    {isDragActive ? "Drop audio file here" : "Drag & drop audio file"}
+                </h3>
+                <p>Supported formats: MP3, WAV, M4A (No size limit)</p>
             </div>
-            <h3>
-                {isDragActive ? "Drop audio file here" : "Drag & drop audio file"}
-            </h3>
-            <p>Supported formats: MP3, WAV, M4A (No size limit)</p>
-        </div>
-    </motion.div>
-);
+        </motion.div>
+    );
 };
 
 export default FileUploader;
