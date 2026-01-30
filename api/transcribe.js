@@ -27,7 +27,9 @@ export default async function handler(req, res) {
 
     // Set max file size slightly above 4.5MB to catch it on the server if needed, 
     // though Vercel might kill it sooner.
-    form.maxFileSize = 5 * 1024 * 1024;
+    // Set max file size slightly above 4.5MB to catch it on the server if needed.
+    form.maxFileSize = 10 * 1024 * 1024; // Increased buffer
+    form.keepExtensions = true; // IMPORTANT: Keep extensions so OpenAI knows it's an mp3
 
     try {
         const [fields, files] = await new Promise((resolve, reject) => {
