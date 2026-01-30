@@ -3,34 +3,19 @@ import { Settings, FileAudio, Trash2, Mic, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
-import ApiKeyModal from './components/ApiKeyModal';
+
 import FileUploader from './components/FileUploader';
 import TranscriptionEditor from './components/TranscriptionEditor';
 import ExportActions from './components/ExportActions';
 import { transcribeAudio } from './services/openaiService';
 
 function App() {
-  const [apiKey, setApiKey] = useState('');
-  const [showKeyModal, setShowKeyModal] = useState(false);
   const [file, setFile] = useState(null);
   const [transcription, setTranscription] = useState('');
   const [status, setStatus] = useState('idle'); // idle, transcribing, completed, error
   const [errorDetails, setErrorDetails] = useState('');
 
-  useEffect(() => {
-    const storedKey = localStorage.getItem('openai_api_key');
-    if (storedKey) {
-      setApiKey(storedKey);
-    } else {
-      setShowKeyModal(true);
-    }
-  }, []);
 
-  const handleSaveKey = (key) => {
-    setApiKey(key);
-    localStorage.setItem('openai_api_key', key);
-    setShowKeyModal(false);
-  };
 
   const handleFileSelect = (selectedFile) => {
     setFile(selectedFile);
@@ -47,17 +32,13 @@ function App() {
   };
 
   const handleTranscribe = async () => {
-    if (!apiKey) {
-      setShowKeyModal(true);
-      return;
-    }
     if (!file) return;
 
     setStatus('transcribing');
     setErrorDetails('');
 
     try {
-      const text = await transcribeAudio(file, apiKey);
+      const text = await transcribeAudio(file);
       setTranscription(text);
       setStatus('completed');
     } catch (err) {
@@ -69,11 +50,7 @@ function App() {
 
   return (
     <div className="container">
-      <ApiKeyModal
-        isOpen={showKeyModal}
-        onSave={handleSaveKey}
-        onClose={() => setShowKeyModal(false)}
-      />
+
 
       <header className="app-header">
         <div className="brand">
@@ -82,13 +59,7 @@ function App() {
           </div>
           <h1 className="logo-text">Aurum <span>Transcription</span></h1>
         </div>
-        <button
-          className="btn-secondary"
-          onClick={() => setShowKeyModal(true)}
-          title="Settings"
-        >
-          <Settings size={20} />
-        </button>
+
       </header>
 
       <main>
