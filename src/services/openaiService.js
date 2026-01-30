@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { alignChunkToFrame } from '../utils/audioUtils';
 
 // 1MB chunk size
 // A safer bet than 4MB because Vercel Serverless has a 10s or 60s timeout depending on plan.
@@ -58,7 +59,12 @@ export const transcribeAudio = async (file, onProgress) => {
   for (let i = 0; i < totalChunks; i++) {
     const start = i * CHUNK_SIZE;
     const end = Math.min(file.size, start + CHUNK_SIZE);
-    const chunk = file.slice(start, end);
+    let chunk = file.slice(start, end);
+
+    // Align MP3 chunks (except the first one which should definitely start with a header)
+    if (extension === 'mp3' && i > 0) {
+      chunk = await alignChunkToFrame(chunk);
+    }
 
     // Create a proper file object for the chunk so the backend receives it with a name
     // The backend uses 'formidable' which expects a filename for uploads
