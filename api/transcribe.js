@@ -40,6 +40,7 @@ export default async function handler(req, res) {
         // Validating file existence. 
         // Formidable might return an array or object depending on version/config.
         const file = Array.isArray(files.file) ? files.file[0] : files.file;
+        const prompt = Array.isArray(fields.prompt) ? fields.prompt[0] : fields.prompt;
 
         if (!file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -48,6 +49,7 @@ export default async function handler(req, res) {
         const transcription = await openai.audio.transcriptions.create({
             file: fs.createReadStream(file.filepath),
             model: "whisper-1",
+            prompt: prompt || "", // Pass the previous context
         });
 
         return res.status(200).json({ text: transcription.text });

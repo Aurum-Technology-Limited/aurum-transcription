@@ -14,6 +14,7 @@ function App() {
   const [transcription, setTranscription] = useState('');
   const [status, setStatus] = useState('idle'); // idle, transcribing, completed, error
   const [errorDetails, setErrorDetails] = useState('');
+  const [progress, setProgress] = useState(0);
 
 
 
@@ -36,9 +37,12 @@ function App() {
 
     setStatus('transcribing');
     setErrorDetails('');
+    setProgress(0);
 
     try {
-      const text = await transcribeAudio(file);
+      const text = await transcribeAudio(file, (percent) => {
+        setProgress(percent);
+      });
       setTranscription(text);
       setStatus('completed');
     } catch (err) {
@@ -112,9 +116,14 @@ function App() {
                   animate={{ opacity: 1 }}
                   style={{ textAlign: 'center', padding: '3rem' }}
                 >
-                  <p style={{ marginBottom: '1rem', color: 'var(--primary)' }}>Transcribing audio with OpenAI Whisper...</p>
+                  <p style={{ marginBottom: '1rem', color: 'var(--primary)' }}>
+                    Transcribing... {progress}%
+                  </p>
                   <div className="loading-bar">
-                    <div className="loading-progress"></div>
+                    <div
+                      className="loading-progress"
+                      style={{ width: `${progress}%`, animation: 'none', transition: 'width 0.3s ease' }}
+                    ></div>
                   </div>
                 </motion.div>
               )}

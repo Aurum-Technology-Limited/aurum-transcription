@@ -7,12 +7,7 @@ import clsx from 'clsx';
 const FileUploader = ({ onFileSelected, disabled }) => {
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
         if (fileRejections.length > 0) {
-            const error = fileRejections[0].errors[0];
-            if (error.code === 'file-too-large') {
-                alert('File is too large. Max size is 4MB due to server limits.');
-            } else {
-                alert('Invalid file type. Please upload MP3 or WAV files.');
-            }
+            alert('Invalid file type. Please upload MP3 or WAV files.');
             return;
         }
         if (acceptedFiles?.length > 0) {
@@ -27,7 +22,6 @@ const FileUploader = ({ onFileSelected, disabled }) => {
             'audio/wav': ['.wav']
         },
         maxFiles: 1,
-        maxSize: 4 * 1024 * 1024, // 4MB limit for Vercel Serverless
         disabled
     });
 
@@ -54,7 +48,7 @@ const FileUploader = ({ onFileSelected, disabled }) => {
                 <h3>
                     {isDragActive ? "Drop audio file here" : "Drag & drop audio file"}
                 </h3>
-                <p>Supported formats: MP3, WAV (Max 4MB)</p>
+                <p>Supported formats: MP3, WAV (No size limit)</p>
             </div>
         </motion.div>
     );
