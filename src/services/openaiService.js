@@ -64,49 +64,62 @@ export const transcribeAudio = async (file, onProgress) => {
     // The backend uses 'formidable' which expects a filename for uploads
     const chunkFile = new File([chunk], `chunk-${i}.${extension}`, { type: file.type });
 
-    const formData = new FormData();
-    formData.append('file', chunkFile);
-    if (previousContext) {
-      formData.append('prompt', previousContext);
-    }
+    let chunkRetryCount = 0;
+    const MAX_RETRIES = 3;
+    let chunkSuccess = false;
 
-    try {
-      const response = await axios.post('/api/transcribe', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const text = response.data.text;
-
-      // Accumulate text (add a space if needed)
-      if (completeTranscription && text) {
-        completeTranscription += ' ' + text;
-      } else {
-        completeTranscription += text;
+    while (!chunkSuccess && chunkRetryCount < MAX_RETRIES) {
+      const formData = new FormData();
+      formData.append('file', chunkFile);
+      // Only attach prompt if it's not the last retry, just in case the prompt is causing issues
+      if (previousContext && chunkRetryCount < MAX_RETRIES - 1) {
+        formData.append('prompt', previousContext);
       }
 
-      // Update context: grab the last 200 chars to help Whisper with the next sentence
-      // This prevents cut-off words or lost context at the split point
-      if (completeTranscription.length > 200) {
-        previousContext = completeTranscription.slice(-200);
-      } else {
-        previousContext = completeTranscription;
-      }
+      try {
+        const response = await axios.post('/api/transcribe', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-      // Notify UI
-      if (onProgress) {
-        const percent = Math.round(((i + 1) / totalChunks) * 100);
-        onProgress(percent);
-      }
+        const text = response.data.text;
 
-    } catch (error) {
-      console.error(`Error transcribing chunk ${i}:`, error);
-      // We could retry here, but for now let's fail
-      if (error.response) {
-        throw new Error(error.response.data.error || `Failed to transcribe part ${i + 1}.`);
+        // Accumulate text
+        if (completeTranscription && text) {
+          completeTranscription += ' ' + text;
+        } else {
+          completeTranscription += text;
+        }
+
+        // Update context
+        if (completeTranscription.length > 200) {
+          previousContext = completeTranscription.slice(-200);
+        } else {
+          previousContext = completeTranscription;
+        }
+
+        chunkSuccess = true;
+
+        // Notify UI
+        if (onProgress) {
+          const percent = Math.round(((i + 1) / totalChunks) * 100);
+          onProgress(percent);
+        }
+
+      } catch (error) {
+        console.error(`Error transcribing chunk ${i} (Attempt ${chunkRetryCount + 1}/${MAX_RETRIES}):`, error);
+        chunkRetryCount++;
+
+        if (chunkRetryCount >= MAX_RETRIES) {
+          if (error.response) {
+            throw new Error(error.response.data.error || `Failed to transcribe part ${i + 1}.`);
+          }
+          throw new Error('Network error or server issue during chunked upload.');
+        }
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000 * chunkRetryCount));
       }
-      throw new Error('Network error or server issue during chunked upload.');
     }
   }
 

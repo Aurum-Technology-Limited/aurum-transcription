@@ -48,7 +48,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const originalExtension = file.originalFilename ? file.originalFilename.split('.').pop() : 'mp3';
+        const originalExtension = file.originalFilename ? file.originalFilename.split('.').pop().toLowerCase() : 'mp3';
         const transcription = await openai.audio.transcriptions.create({
             file: await toFile(fs.createReadStream(file.filepath), `audio.${originalExtension}`),
             model: "whisper-1",
