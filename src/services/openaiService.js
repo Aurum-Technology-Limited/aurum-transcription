@@ -18,7 +18,8 @@ export const transcribeAudio = async (file, onProgress) => {
 
     // Create a proper file object for the chunk so the backend receives it with a name
     // The backend uses 'formidable' which expects a filename for uploads
-    const chunkFile = new File([chunk], `chunk-${i}.mp3`, { type: file.type });
+    const extension = file.name.split('.').pop();
+    const chunkFile = new File([chunk], `chunk-${i}.${extension}`, { type: file.type });
 
     const formData = new FormData();
     formData.append('file', chunkFile);
