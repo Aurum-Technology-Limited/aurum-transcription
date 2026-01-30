@@ -1,6 +1,6 @@
 import { IncomingForm } from 'formidable';
 import fs from 'fs';
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 
 // Vercel Serverless Function config to disable body parsing (let formidable handle it)
 export const config = {
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
         }
 
         const transcription = await openai.audio.transcriptions.create({
-            file: fs.createReadStream(file.filepath),
+            file: await toFile(fs.createReadStream(file.filepath), "audio.mp3"),
             model: "whisper-1",
             prompt: prompt || "", // Pass the previous context
         });
